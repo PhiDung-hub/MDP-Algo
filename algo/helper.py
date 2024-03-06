@@ -1,6 +1,4 @@
-from consts import Direction
 from entities.Entity import CellState
-
 
 def command_generator(
     states: list[CellState], obstacles: list[dict[str, int]]

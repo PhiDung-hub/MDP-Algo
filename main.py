@@ -1,11 +1,11 @@
 import time
 from algo.algo import MazeSolver
+from algo.helper import command_generator
 from flask import Flask, request, jsonify
 from consts import Direction, WIDTH, HEIGHT
 
 # from flask_cors import CORS
 import model as ModelModule
-from helper import command_generator
 from typing import Any
 import cv2
 
