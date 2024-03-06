@@ -1,22 +1,3 @@
-<br />
-<p align="center">
-  <img src="/images/Map.png" alt="Logo" height=150 >
-  <h1 align="center">
-    CZ3004/SC2079 Multidisciplinary Project - Algorithm API
-  </h1>
-</p>
-
-# Overview
-**2023 Semester 1 Update**: At least from what my juniors told me, this repository, along with my other MDP-related ones, are entirely reusuable. The only exception is that you will need to retrain the YOLO model since the fonts/colors were changed. That is a 1-day thing. If you are using these repositories and you don't have a functioning, fully-integrated system by end of Week 4, reconsider your life choices.
-
-Y'all, if you are using this code, which apparently a LOT of y'all are, at least star this repo leh
-
-This repository contains the code for the algorithm and image recognition inference component of the CZ3004/SC2079 Multidisciplinary Project. The repository is responsible for the following:
-
-- Finding the shortest path from starting point to all the obstacles
-- Performing inference on the images captured by the robot to identify the symbols
-- Stitching the images together to form a summary of the results
-
 ## Setup
 
 ```bash
@@ -85,7 +66,6 @@ Sample JSON request body:
 ```
 
 Sample JSON response:
-
 ```{
     "data": {
         "commands": [
@@ -154,17 +134,14 @@ The API will then perform three operations:
 }
 ```
 
-Please note that the inference pipeline is different for Task 1 and Task 2, be sure to comment/uncomment the appropriate lines in `app.py` before running the API.
+Please note that the inference pipeline is different for Task 1 and Task 2, 
+be sure to comment/uncomment the appropriate lines in `app.py` before running the API.
 
 ##### 3. POST Request to /stitch
 
 This will trigger the `stitch_image` and `stitch_image_own` functions.
 
 - Images found in the `run/` and `own_results` directory will be stitched together and saved separately, producing two stitched images. We have two functions for redundancy purposes. In case one fails, the other can still run.
-
-# Disclaimer
-
-I am not responsible for any errors, mishaps, or damages that may occur from using this code. Use at your own risk. This code is provided as-is, with no warranty of any kind. 
 
 # Acknowledgements
 

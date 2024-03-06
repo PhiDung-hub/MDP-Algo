@@ -15,8 +15,7 @@ class Robot:
         Internals:
             states: List of cell states of the robot's historical path
         """
-        self.states: List[CellState] = [
-            CellState(center_x, center_y, start_direction)]
+        self.states: List[CellState] = [CellState(center_x, center_y, start_direction)]
 
     def get_start_state(self):
         """Returns the starting cell state of the robot

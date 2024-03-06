@@ -6,7 +6,6 @@ class Direction(int, Enum):
     EAST = 2
     SOUTH = 4
     WEST = 6
-    SKIP = 8
 
     def __int__(self):
         return self.value
