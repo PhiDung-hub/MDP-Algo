@@ -9,7 +9,6 @@ import model as ModelModule
 from typing import Any
 import cv2
 
-
 app = Flask(__name__)
 
 # model = ModelModule.load_model('Week_8.pt')
