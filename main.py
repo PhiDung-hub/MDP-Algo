@@ -42,7 +42,7 @@ def path_finding():
 
     # Initialize MazeSolver object with robot size of 20x20, bottom left corner of robot at (1,1), facing north, and whether to use a big turn or not.
     maze_solver = MazeSolver(
-        WIDTH, HEIGHT, robot_x, robot_y, robot_direction, big_turn=None
+        WIDTH, HEIGHT, robot_x, robot_y, robot_direction, big_turn=0
     )
 
     # Add each obstacle into the MazeSolver. Each obstacle is defined by its x,y positions, its direction, and its id

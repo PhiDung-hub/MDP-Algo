@@ -23,57 +23,42 @@ def command_generator(
 
     # Iterate through each state in the list of states
     for i in range(1, len(states)):
-        previous_state = states[i - 1]
-        current_state = states[i]
+        p_state = states[i - 1]
+        cur_state = states[i]
 
-        def generate_forward_command(cur_state: CellState, pre_state: CellState) -> str:
-            d = cur_state.direction
+        is_forward_x = (cur_state.x - p_state.x) * (3 - cur_state.direction) > 0
+        is_forward_y = (cur_state.y - p_state.y) * (3 - cur_state.direction) > 0
 
-            is_forward_x = (cur_state.x - pre_state.x) * (3 - d) > 0
-            is_forward_y = (cur_state.y - pre_state.y) * (3 - d) > 0
-            if is_forward_x or is_forward_y:
-                return "FW010"
-            else:
-                return "BW010"
+        # by direction convention, 2 mod 8
+        is_clockwise = (cur_state.direction - p_state.direction - 2) % 8 == 0
+        # by direction convention, 6 mod 8
+        is_counter_clockwise = (cur_state.direction - p_state.direction - 6) % 8 == 0
 
-        # If previous state and current state are not the same direction, it means that there will be a turn command involved
-        # Assume there are 4 turning command: FR, FL, BL, BR (the turn command will turn the robot 90 degrees)
-        def generate_turn_command(
-            current_state: CellState, previous_state: CellState
-        ) -> str:
-            # Facing north previously
-            pd = previous_state.direction
-            cd = current_state.direction
-
-            # by direction convention, 2 mod 8
-            is_clockwise = (cd - pd - 2) % 8 == 0
-            # by direction convention, 6 mod 8
-            is_counter_clockwise = (cd - pd - 6) % 8 == 0
-
-            if is_clockwise:
-                # y value increased -> Forward Right
-                if current_state.y > previous_state.y:
-                    return "FR000"
-                # y value decreased -> Backward Left
-                else:
-                    return "BL000"
-            elif is_counter_clockwise:
-                # y value increased -> Forward Left
-                if current_state.y > previous_state.y:
-                    return "FL000"
-                # y value decreased -> Backward Right
-                else:
-                    return "BR000"
-            else:
-                raise Exception(
-                    f"Invalid turing direction: previous - {pd} current - {cd}"
-                )
-
-        if current_state.direction == previous_state.direction:
-            f_cmd = generate_forward_command(current_state, previous_state)
+        if cur_state.direction == p_state.direction:
+            f_cmd = "FW010" if (is_forward_x or is_forward_y) else "BW010"
             commands.append(f_cmd)
         else:
-            turn_command = generate_turn_command(current_state, previous_state)
+            # Assume there are 4 turning command: FR, FL, BL, BR (the turn command will turn the robot 90 degrees)
+            def generate_turn_command() -> str:
+                if is_clockwise:
+                    # y value increased -> Forward Right
+                    if is_forward_x or is_forward_y:
+                        return "FR000"
+                    # y value decreased -> Backward Left
+                    else:
+                        return "BL000"
+                elif is_counter_clockwise:
+                    # y value increased -> Forward Left
+                    if is_forward_x or is_forward_y:
+                        return "FL000"
+                    # y value decreased -> Backward Right
+                    else:
+                        return "BR000"
+                else:
+                    raise Exception(
+                        f"Invalid turing direction: previous - {p_state.direction} current - {cur_state.direction}"
+                    )
+            turn_command = generate_turn_command()
             commands.append(turn_command)
 
         def generate_snap_command(
@@ -114,10 +99,10 @@ def command_generator(
             return snap_cmd
 
         # If any of these states has a valid screenshot ID, then add a SNAP command as well to take a picture
-        if current_state.screenshot_id != -1:
-            obstacle = obstacles_dict[current_state.screenshot_id]
+        if cur_state.screenshot_id != -1:
+            obstacle = obstacles_dict[cur_state.screenshot_id]
 
-            snap_command = generate_snap_command(current_state, obstacle)
+            snap_command = generate_snap_command(cur_state, obstacle)
             commands.append(snap_command)
 
     # Final command is the stop command (SSSSS)
@@ -133,7 +118,7 @@ def command_generator(
             # Get the number of steps of previous command
             steps = int(compressed_commands[-1][-3:])
             value = steps + 10
-            dist_str = f"{value}" if value > 100 else f"0{value}"
+            dist_str = f"{value}" if value >= 100 else f"0{value}"
             compressed_commands[-1] = f"{cmd[:2]}{dist_str}"
 
             continue
