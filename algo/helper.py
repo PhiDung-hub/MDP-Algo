@@ -1,5 +1,6 @@
 from entities.Entity import CellState
 
+
 def command_generator(
     states: list[CellState], obstacles: list[dict[str, int]]
 ) -> list[str]:
@@ -26,8 +27,8 @@ def command_generator(
         p_state = states[i - 1]
         cur_state = states[i]
 
-        is_forward_x = (cur_state.x - p_state.x) * (3 - cur_state.direction) > 0
-        is_forward_y = (cur_state.y - p_state.y) * (3 - cur_state.direction) > 0
+        is_forward_x = (cur_state.x - p_state.x) * (3 - p_state.direction) > 0
+        is_forward_y = (cur_state.y - p_state.y) * (3 - p_state.direction) > 0
 
         # by direction convention, 2 mod 8
         is_clockwise = (cur_state.direction - p_state.direction - 2) % 8 == 0
@@ -40,16 +41,21 @@ def command_generator(
         else:
             # Assume there are 4 turning command: FR, FL, BL, BR (the turn command will turn the robot 90 degrees)
             def generate_turn_command() -> str:
+                is_forward = (
+                    is_forward_x and (p_state.direction == 2 or p_state.direction == 6)
+                ) or (
+                    is_forward_y and (p_state.direction == 0 or p_state.direction == 4)
+                )
                 if is_clockwise:
                     # y value increased -> Forward Right
-                    if is_forward_x or is_forward_y:
+                    if is_forward:
                         return "FR000"
                     # y value decreased -> Backward Left
                     else:
                         return "BL000"
                 elif is_counter_clockwise:
                     # y value increased -> Forward Left
-                    if is_forward_x or is_forward_y:
+                    if is_forward:
                         return "FL000"
                     # y value decreased -> Backward Right
                     else:
@@ -58,6 +64,7 @@ def command_generator(
                     raise Exception(
                         f"Invalid turing direction: previous - {p_state.direction} current - {cur_state.direction}"
                     )
+
             turn_command = generate_turn_command()
             commands.append(turn_command)
 
