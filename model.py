@@ -10,20 +10,52 @@ from ultralytics import YOLO
 import math
 
 SPECIAL_LABELS = {
-    'arrow-bullseye': 'id00',
-    'bullseye-arrow': 'id01',
-    'bullseye-arrow-bullseye': 'id02',
+    "arrow-bullseye": "id00",
+    "bullseye-arrow": "id01",
+    "bullseye-arrow-bullseye": "id02",
 }
 
-CLASSNAMES_MAP = {0: SPECIAL_LABELS['arrow-bullseye'], 1: SPECIAL_LABELS['bullseye-arrow'], 2: SPECIAL_LABELS['bullseye-arrow-bullseye'], 
-              3: 'id11', 4: 'id12', 5: 'id13', 6: 'id14', 7: 'id15', 8: 'id16', 9: 'id17', 
-              10: 'id18', 11: 'id19', 12: 'id20', 13: 'id21', 14: 'id22', 15: 'id23', 16: 'id24', 
-              17: 'id25', 18: 'id26', 19: 'id27', 20: 'id28', 21: 'id29', 22: 'id30', 23: 'id31', 
-              24: 'id32', 25: 'id33', 26: 'id34', 27: 'id35', 28: 'id36', 29: 'id37', 30: 'id38', 
-              31: 'id39', 32: 'id40', 33: 'id99'}
+CLASSNAMES_MAP = {
+    0: SPECIAL_LABELS["arrow-bullseye"],
+    1: SPECIAL_LABELS["bullseye-arrow"],
+    2: SPECIAL_LABELS["bullseye-arrow-bullseye"],
+    3: "id11",
+    4: "id12",
+    5: "id13",
+    6: "id14",
+    7: "id15",
+    8: "id16",
+    9: "id17",
+    10: "id18",
+    11: "id19",
+    12: "id20",
+    13: "id21",
+    14: "id22",
+    15: "id23",
+    16: "id24",
+    17: "id25",
+    18: "id26",
+    19: "id27",
+    20: "id28",
+    21: "id29",
+    22: "id30",
+    23: "id31",
+    24: "id32",
+    25: "id33",
+    26: "id34",
+    27: "id35",
+    28: "id36",
+    29: "id37",
+    30: "id38",
+    31: "id39",
+    32: "id40",
+    33: "id99",
+}
+
 
 def YoloV8(weight="best_v8.pt"):
     return YOLO(weight)
+
 
 def rec_img(model: YOLO, file_data: bytes):
     np_data = np.frombuffer(file_data, dtype=np.uint8)
@@ -54,7 +86,8 @@ def rec_img(model: YOLO, file_data: bytes):
             response_obj[index] = {
                 "confidence": confidence,
                 "bounds": [x1, y1, x2, y2],
-                "id": int(CLASSNAMES_MAP[cls][-2:])
+                "area": abs(x1 - x2) * abs(y1 - y2),
+                "id": int(CLASSNAMES_MAP[cls][-2:]),
             }
 
             # Object details
@@ -64,15 +97,30 @@ def rec_img(model: YOLO, file_data: bytes):
             color = (0, 255, 0)
             thickness = 12
 
-            cv2.putText(image_instance, CLASSNAMES_MAP[cls], org, font, fontScale, color, thickness)
+            cv2.putText(
+                image_instance,
+                CLASSNAMES_MAP[cls],
+                org,
+                font,
+                fontScale,
+                color,
+                thickness,
+            )
 
     # TODO: handle the case for multiple box detected (in response_obj)
-    
+
     image_id = 0
-    if response_obj[0]:
-        image_id = response_obj[0]['id']
+    area = 0
+    for obj in response_obj.values():
+        if obj['area'] > area:
+            area = obj['area']
+            image_id = obj['id']
+
+    if image_id == 0:
+        print("IMAGE NOT DETECTED!!!! TRY HARDER")
 
     return (image_id, response_obj, image_instance)
+
 
 ############################### LEGACY CODE ###################################
 ###############################################################################
@@ -81,11 +129,11 @@ def stitch_image():
     Stitches the images in the folder together and saves it into runs/stitched folder
     """
     # Initialize path to save stitched image
-    imgFolder = 'runs'
-    stitchedPath = os.path.join(imgFolder, f'stitched-{int(time.time())}.jpeg')
+    imgFolder = "runs"
+    stitchedPath = os.path.join(imgFolder, f"stitched-{int(time.time())}.jpeg")
 
     # Find all files that ends with ".jpg" (this won't match the stitched images as we name them ".jpeg")
-    imgPaths = glob.glob(os.path.join(imgFolder+"/detect/*/", "*.jpg"))
+    imgPaths = glob.glob(os.path.join(imgFolder + "/detect/*/", "*.jpg"))
     # Open all images
     images = [Image.open(x) for x in imgPaths]
     # Get the width and height of each image
@@ -93,7 +141,7 @@ def stitch_image():
     # Calculate the total width and max height of the stitched image, as we are stitching horizontally
     total_width = sum(width)
     max_height = max(height)
-    stitchedImg = Image.new('RGB', (total_width, max_height))
+    stitchedImg = Image.new("RGB", (total_width, max_height))
     x_offset = 0
 
     # Stitch the images together
@@ -105,10 +153,10 @@ def stitch_image():
 
     # Move original images to "originals" subdirectory
     for img in imgPaths:
-        shutil.move(img, os.path.join(
-            "runs", "originals", os.path.basename(img)))
+        shutil.move(img, os.path.join("runs", "originals", os.path.basename(img)))
 
     return stitchedImg
+
 
 def stitch_image_own():
     """
@@ -116,19 +164,18 @@ def stitch_image_own():
 
     Basically similar to stitch_image() but with different folder names and slightly different drawing of bounding boxes and text
     """
-    imgFolder = 'own_results'
-    stitchedPath = os.path.join(imgFolder, f'stitched-{int(time.time())}.jpeg')
+    imgFolder = "tests/result"
+    stitchedPath = os.path.join(imgFolder, f"stitched-{int(time.time())}.jpeg")
 
-    imgPaths = glob.glob(os.path.join(imgFolder+"/annotated_image_*.jpg"))
-    imgTimestamps = [imgPath.split("_")[-1][:-4] for imgPath in imgPaths]
-    
-    sortedByTimeStampImages = sorted(zip(imgPaths, imgTimestamps), key=lambda x: x[1])
+    imgPaths = glob.glob(os.path.join(imgFolder + "/*.jpg")) 
 
-    images = [Image.open(x[0]) for x in sortedByTimeStampImages]
+    images = [Image.open(img) for img in imgPaths]
+
     width, height = zip(*(i.size for i in images))
     total_width = sum(width)
     max_height = max(height)
-    stitchedImg = Image.new('RGB', (total_width, max_height))
+
+    stitchedImg = Image.new("RGB", (total_width, max_height))
     x_offset = 0
 
     for im in images:
@@ -137,3 +184,4 @@ def stitch_image_own():
     stitchedImg.save(stitchedPath)
 
     return stitchedImg
+

@@ -127,8 +127,8 @@ def stitch():
     This is the main endpoint for the stitching command. Stitches the images using two different functions,
     in effect creating two stitches, just for redundancy purposes
     """
-    img = ModelModule.stitch_image()
-    img.show()
+    # img = ModelModule.stitch_image()
+    # img.show()
     img2 = ModelModule.stitch_image_own()
     img2.show()
     return jsonify({"result": "ok"})

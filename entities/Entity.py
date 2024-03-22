@@ -218,3 +218,4 @@ class Grid:
             optimal_positions.append(view_states)
 
         return optimal_positions
+
