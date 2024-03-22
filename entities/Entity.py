@@ -84,14 +84,16 @@ class Obstacle(CellState):
         """
         cells = []
 
-        observable = range(3, 7)
+        observable = range(4, 7)
+
+        exp = 2
 
         # If the obstacle is facing north, then robot's cell state must be facing south
         if self.direction == Direction.NORTH:
             for y in observable:
                 (cell_x, cell_y) = (self.x, self.y + y)
                 if is_valid_cell(cell_x, cell_y):
-                    cells.append(CellState(cell_x, cell_y, Direction.SOUTH, self.obstacle_id, -(y) ** 1.5))
+                    cells.append(CellState(cell_x, cell_y, Direction.SOUTH, self.obstacle_id, -y ** exp))
 
 
         # If obstacle is facing south, then robot's cell state must be facing north
@@ -99,21 +101,21 @@ class Obstacle(CellState):
             for y in observable:
                 (cell_x, cell_y) = (self.x, self.y - y)
                 if is_valid_cell(cell_x, cell_y):
-                    cells.append(CellState(cell_x, cell_y, Direction.NORTH, self.obstacle_id, -y ** 1.5))
+                    cells.append(CellState(cell_x, cell_y, Direction.NORTH, self.obstacle_id, -y ** exp))
 
         # If obstacle is facing east, then robot's cell state must be facing west
         elif self.direction == Direction.EAST:
-            for x in range(4, 7):
+            for x in observable:
                 (cell_x, cell_y) = (self.x + x, self.y)
                 if is_valid_cell(cell_x, cell_y):
-                    cells.append(CellState(cell_x, cell_y, Direction.WEST, self.obstacle_id, -x ** 1.5))
+                    cells.append(CellState(cell_x, cell_y, Direction.WEST, self.obstacle_id, -x ** exp))
 
         # If obstacle is facing west, then robot's cell state must be facing east
         elif self.direction == Direction.WEST:
-            for x in range(4, 7):
+            for x in observable:
                 (cell_x, cell_y) = (self.x - x, self.y)
                 if is_valid_cell(cell_x, cell_y):
-                    cells.append(CellState(cell_x, cell_y, Direction.EAST, self.obstacle_id, -x ** 1.5))
+                    cells.append(CellState(cell_x, cell_y, Direction.EAST, self.obstacle_id, -x ** exp))
 
         return cells
 
@@ -178,50 +180,24 @@ class Grid:
             if abs(ob.x - x) + abs(ob.y - y) >= 4:
                 # print(f"ob.x: {ob.x} ob.y: {ob.y} x: {x} y:{y} Triggered more than 3 units bypass")
                 continue
+
             # If max(x,y) is less than 3 units away, consider not reachable
-            # if max(abs(ob.x - x), abs(ob.y - y)) < EXPANDED_CELL * 2 + 1:
-            if turn:
-                if max(abs(ob.x - x), abs(ob.y - y)) < EXPANDED_CELL * 2 + 1:
-                    # if ob.x == 0 and ob.y == 10 and x == 1 and y == 12:
-                    #     print(f"ob.x: {ob.x} ob.y: {ob.y} x: {x} y:{y} Triggered less than 3 max units trap")
-                    return False
-            if preTurn:
-                if max(abs(ob.x - x), abs(ob.y - y)) < EXPANDED_CELL * 2 + 1:
-                    # if ob.x == 0 and ob.y == 10 and x == 1 and y == 12:
-                    #     print(f"ob.x: {ob.x} ob.y: {ob.y} x: {x} y:{y} Triggered less than 3 max units trap")
-                    return False
-            else:
-                if max(abs(ob.x - x), abs(ob.y - y)) < 2:
-                    # print(f"ob.x: {ob.x} ob.y: {ob.y} x: {x} y:{y} Triggered less than 3 max units trap")
-                    return False
+            if turn and max(abs(ob.x - x), abs(ob.y - y)) < EXPANDED_CELL * 2 + 1:
+                # if ob.x == 0 and ob.y == 10 and x == 1 and y == 12:
+                #     print(f"ob.x: {ob.x} ob.y: {ob.y} x: {x} y:{y} Triggered less than 3 max units trap")
+                return False
+            if preTurn and max(abs(ob.x - x), abs(ob.y - y)) < EXPANDED_CELL * 2 + 1:
+                # if ob.x == 0 and ob.y == 10 and x == 1 and y == 12:
+                #     print(f"ob.x: {ob.x} ob.y: {ob.y} x: {x} y:{y} Triggered less than 3 max units trap")
+                return False
+            elif max(abs(ob.x - x), abs(ob.y - y)) < 2:
+                # print(f"ob.x: {ob.x} ob.y: {ob.y} x: {x} y:{y} Triggered less than 3 max units trap")
+                return False
 
         return True
 
     def is_valid_coord(self, x: int, y: int) -> bool:
-        """Checks if given position is within bounds
-
-        Args:
-            x (int): x-coordinate
-            y (int): y-coordinate
-
-        Returns:
-            bool: True if valid, False otherwise
-        """
-        if x < 1 or x >= self.size_x - 1 or y < 1 or y >= self.size_y - 1:
-            return False
-
-        return True
-
-    def is_valid_cell_state(self, state: CellState) -> bool:
-        """Checks if given state is within bounds
-
-        Args:
-            state (CellState)
-
-        Returns:
-            bool: True if valid, False otherwise
-        """
-        return self.is_valid_coord(state.x, state.y)
+        return x > 0 and y > 0 and x < self.size_x - 1 and y < self.size_y - 1
 
     def get_view_obstacle_positions(self, retrying) -> List[List[CellState]]:
         """

@@ -7,7 +7,6 @@ from entities.Entity import Obstacle, CellState, Grid
 from consts import (
     Direction,
     MOVE_DIRECTION,
-    TURN_FACTOR,
     ITERATIONS,
     TURN_RADIUS,
     SAFE_COST,
@@ -518,7 +517,6 @@ class MazeSolver:
 
                     move_cost = (
                         Direction.rotation_cost(new_direction, cur_direction)
-                        * TURN_FACTOR
                         + 1
                         + safe_cost
                     )
