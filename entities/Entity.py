@@ -39,6 +39,7 @@ class CellState:
         """
         return self.x == x and self.y == y and self.direction == direction
 
+
     def __repr__(self):
         return "Cell(x: {}, y: {}, d: {}, screenshot_id: {})".format(
             self.x, self.y, self.direction, self.screenshot_id
@@ -75,7 +76,7 @@ class Obstacle(CellState):
             and self.direction == other.direction
         )
 
-    def get_view_state(self, retrying) -> List[CellState]:
+    def get_view_state(self, retrying=False) -> List[CellState]:
         """Constructs the list of CellStates from which the robot can view the symbol on the obstacle
 
         Returns:
@@ -83,388 +84,36 @@ class Obstacle(CellState):
         """
         cells = []
 
+        observable = range(3, 7)
+
         # If the obstacle is facing north, then robot's cell state must be facing south
         if self.direction == Direction.NORTH:
-            if retrying == False:
-                # Or (x, y + 3)
-                if is_valid_cell(self.x, self.y + 1 + EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x,
-                            self.y + 1 + EXPANDED_CELL * 2,
-                            Direction.SOUTH,
-                            self.obstacle_id,
-                            5,
-                        )
-                    )
-                # Or (x, y + 4)
-                if is_valid_cell(self.x, self.y + 2 + EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x,
-                            self.y + 2 + EXPANDED_CELL * 2,
-                            Direction.SOUTH,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
+            for y in observable:
+                (cell_x, cell_y) = (self.x, self.y + y)
+                if is_valid_cell(cell_x, cell_y):
+                    cells.append(CellState(cell_x, cell_y, Direction.SOUTH, self.obstacle_id, -(y) ** 1.5))
 
-                # Or (x + 1, y + 4)
-                if is_valid_cell(self.x + 1, self.y + 2 + EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x + 1,
-                            self.y + 2 + EXPANDED_CELL * 2,
-                            Direction.SOUTH,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-                # Or (x - 1, y + 4)
-                if is_valid_cell(self.x - 1, self.y + 2 + EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x - 1,
-                            self.y + 2 + EXPANDED_CELL * 2,
-                            Direction.SOUTH,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-
-            elif retrying == True:
-                # Or (x, y + 4)
-                if is_valid_cell(self.x, self.y + 2 + EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x,
-                            self.y + 2 + EXPANDED_CELL * 2,
-                            Direction.SOUTH,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
-                # Or (x, y + 5)
-                if is_valid_cell(self.x, self.y + 3 + EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x,
-                            self.y + 3 + EXPANDED_CELL * 2,
-                            Direction.SOUTH,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
-                # Or (x + 1, y + 4)
-                if is_valid_cell(self.x + 1, self.y + 2 + EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x + 1,
-                            self.y + 2 + EXPANDED_CELL * 2,
-                            Direction.SOUTH,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-                # Or (x - 1, y + 4)
-                if is_valid_cell(self.x - 1, self.y + 2 + EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x - 1,
-                            self.y + 2 + EXPANDED_CELL * 2,
-                            Direction.SOUTH,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
 
         # If obstacle is facing south, then robot's cell state must be facing north
         elif self.direction == Direction.SOUTH:
-
-            if retrying == False:
-                # Or (x, y - 3)
-                if is_valid_cell(self.x, self.y - 1 - EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x,
-                            self.y - 1 - EXPANDED_CELL * 2,
-                            Direction.NORTH,
-                            self.obstacle_id,
-                            5,
-                        )
-                    )
-                # Or (x, y - 4)
-                if is_valid_cell(self.x, self.y - 2 - EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x,
-                            self.y - 2 - EXPANDED_CELL * 2,
-                            Direction.NORTH,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
-
-                # Or (x + 1, y - 4)
-                if is_valid_cell(self.x + 1, self.y - 2 - EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x + 1,
-                            self.y - 2 - EXPANDED_CELL * 2,
-                            Direction.NORTH,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-                # Or (x - 1, y - 4)
-                if is_valid_cell(self.x - 1, self.y - 2 - EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x - 1,
-                            self.y - 2 - EXPANDED_CELL * 2,
-                            Direction.NORTH,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-
-            elif retrying == True:
-                # Or (x, y - 4)
-                if is_valid_cell(self.x, self.y - 2 - EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x,
-                            self.y - 2 - EXPANDED_CELL * 2,
-                            Direction.NORTH,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
-                # Or (x, y - 5)
-                if is_valid_cell(self.x, self.y - 3 - EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x,
-                            self.y - 3 - EXPANDED_CELL * 2,
-                            Direction.NORTH,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
-                # Or (x + 1, y - 4)
-                if is_valid_cell(self.x + 1, self.y - 2 - EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x + 1,
-                            self.y - 2 - EXPANDED_CELL * 2,
-                            Direction.NORTH,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-                # Or (x - 1, y - 4)
-                if is_valid_cell(self.x - 1, self.y - 2 - EXPANDED_CELL * 2):
-                    cells.append(
-                        CellState(
-                            self.x - 1,
-                            self.y - 2 - EXPANDED_CELL * 2,
-                            Direction.NORTH,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
+            for y in observable:
+                (cell_x, cell_y) = (self.x, self.y - y)
+                if is_valid_cell(cell_x, cell_y):
+                    cells.append(CellState(cell_x, cell_y, Direction.NORTH, self.obstacle_id, -y ** 1.5))
 
         # If obstacle is facing east, then robot's cell state must be facing west
         elif self.direction == Direction.EAST:
-
-            if retrying == False:
-                # Or (x + 3,y)
-                if is_valid_cell(self.x + 1 + EXPANDED_CELL * 2, self.y):
-                    cells.append(
-                        CellState(
-                            self.x + 1 + EXPANDED_CELL * 2,
-                            self.y,
-                            Direction.WEST,
-                            self.obstacle_id,
-                            5,
-                        )
-                    )
-                # Or (x + 4,y)
-                if is_valid_cell(self.x + 2 + EXPANDED_CELL * 2, self.y):
-                    # print(f"Obstacle facing east, Adding {self.x + 2 + EXPANDED_CELL * 2}, {self.y}")
-                    cells.append(
-                        CellState(
-                            self.x + 2 + EXPANDED_CELL * 2,
-                            self.y,
-                            Direction.WEST,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
-
-                # Or (x + 4, y + 1)
-                if is_valid_cell(self.x + 2 + EXPANDED_CELL * 2, self.y + 1):
-                    cells.append(
-                        CellState(
-                            self.x + 2 + EXPANDED_CELL * 2,
-                            self.y + 1,
-                            Direction.WEST,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-                # Or (x + 4, y - 1)
-                if is_valid_cell(self.x + 2 + EXPANDED_CELL * 2, self.y - 1):
-                    cells.append(
-                        CellState(
-                            self.x + 2 + EXPANDED_CELL * 2,
-                            self.y - 1,
-                            Direction.WEST,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-
-            elif retrying == True:
-                # Or (x + 4, y)
-                if is_valid_cell(self.x + 2 + EXPANDED_CELL * 2, self.y):
-                    cells.append(
-                        CellState(
-                            self.x + 2 + EXPANDED_CELL * 2,
-                            self.y,
-                            Direction.WEST,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
-                # Or (x + 5, y)
-                if is_valid_cell(self.x + 3 + EXPANDED_CELL * 2, self.y):
-                    cells.append(
-                        CellState(
-                            self.x + 3 + EXPANDED_CELL * 2,
-                            self.y,
-                            Direction.WEST,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
-                # Or (x + 4,y + 1)
-                if is_valid_cell(self.x + 2 + EXPANDED_CELL * 2, self.y + 1):
-                    cells.append(
-                        CellState(
-                            self.x + 2 + EXPANDED_CELL * 2,
-                            self.y + 1,
-                            Direction.WEST,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-                # Or (x + 4,y - 1)
-                if is_valid_cell(self.x + 2 + EXPANDED_CELL * 2, self.y - 1):
-                    cells.append(
-                        CellState(
-                            self.x + 2 + EXPANDED_CELL * 2,
-                            self.y - 1,
-                            Direction.WEST,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
+            for x in range(4, 7):
+                (cell_x, cell_y) = (self.x + x, self.y)
+                if is_valid_cell(cell_x, cell_y):
+                    cells.append(CellState(cell_x, cell_y, Direction.WEST, self.obstacle_id, -x ** 1.5))
 
         # If obstacle is facing west, then robot's cell state must be facing east
         elif self.direction == Direction.WEST:
-            if retrying == False:
-                # Or (x - 3, y)
-                if is_valid_cell(self.x - 1 - EXPANDED_CELL * 2, self.y):
-                    cells.append(
-                        CellState(
-                            self.x - 1 - EXPANDED_CELL * 2,
-                            self.y,
-                            Direction.EAST,
-                            self.obstacle_id,
-                            5,
-                        )
-                    )
-                # Or (x - 4, y)
-                if is_valid_cell(self.x - 2 - EXPANDED_CELL * 2, self.y):
-                    cells.append(
-                        CellState(
-                            self.x - 2 - EXPANDED_CELL * 2,
-                            self.y,
-                            Direction.EAST,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
-
-                # Or (x - 4, y + 1)
-                if is_valid_cell(self.x - 2 - EXPANDED_CELL * 2, self.y + 1):
-                    cells.append(
-                        CellState(
-                            self.x - 2 - EXPANDED_CELL * 2,
-                            self.y + 1,
-                            Direction.EAST,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-                # Or (x - 4, y - 1)
-                if is_valid_cell(self.x - 2 - EXPANDED_CELL * 2, self.y - 1):
-                    cells.append(
-                        CellState(
-                            self.x - 2 - EXPANDED_CELL * 2,
-                            self.y - 1,
-                            Direction.EAST,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-
-            elif retrying == True:
-                # Or (x - 4, y)
-                if is_valid_cell(self.x - 2 - EXPANDED_CELL * 2, self.y):
-                    cells.append(
-                        CellState(
-                            self.x - 2 - EXPANDED_CELL * 2,
-                            self.y,
-                            Direction.EAST,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
-                # Or (x - 5, y)
-                if is_valid_cell(self.x - 3 - EXPANDED_CELL * 2, self.y):
-                    cells.append(
-                        CellState(
-                            self.x - 3 - EXPANDED_CELL * 2,
-                            self.y,
-                            Direction.EAST,
-                            self.obstacle_id,
-                            0,
-                        )
-                    )
-                # Or (x - 4, y + 1)
-                if is_valid_cell(self.x - 2 - EXPANDED_CELL * 2, self.y + 1):
-                    cells.append(
-                        CellState(
-                            self.x - 2 - EXPANDED_CELL * 2,
-                            self.y + 1,
-                            Direction.EAST,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
-                # Or (x - 4, y - 1)
-                if is_valid_cell(self.x - 2 - EXPANDED_CELL * 2, self.y - 1):
-                    cells.append(
-                        CellState(
-                            self.x - 2 - EXPANDED_CELL * 2,
-                            self.y - 1,
-                            Direction.EAST,
-                            self.obstacle_id,
-                            SCREENSHOT_COST,
-                        )
-                    )
+            for x in range(4, 7):
+                (cell_x, cell_y) = (self.x - x, self.y)
+                if is_valid_cell(cell_x, cell_y):
+                    cells.append(CellState(cell_x, cell_y, Direction.EAST, self.obstacle_id, -x ** 1.5))
 
         return cells
 
@@ -580,7 +229,6 @@ class Grid:
         The state is the position that the robot can see the image of the obstacle and is safe to reach without collision
         :return: [[CellState]]
         """
-        # print(f"Inside get_view_obstacle_positions: retrying = {retrying}")
         optimal_positions = []
         for obstacle in self.obstacles:
             if obstacle.direction == 8:
